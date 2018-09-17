@@ -248,6 +248,9 @@ class ClippedPPOAgent(ActorCriticAgent):
 
     def train(self):
         if self._should_train(wait_for_full_episode=True):
+            for network in self.networks.values():
+                network.set_is_training(True)
+
             dataset = self.memory.transitions
             dataset = self.pre_network_filter.filter(dataset, deep_copy=False)
             batch = Batch(dataset)
@@ -263,6 +266,9 @@ class ClippedPPOAgent(ActorCriticAgent):
                 batch = Batch(dataset)
 
                 self.train_network(batch, self.ap.algorithm.optimization_epochs)
+
+            for network in self.networks.values():
+                network.set_is_training(False)
 
             self.post_training_commands()
             self.training_iteration += 1
